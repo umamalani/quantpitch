@@ -1,5 +1,5 @@
 """
-Partner A robustness tests on the signal side.
+Robustness tests on the signal side.
 
 Varies:
   - Momentum lookback : 6-1, 9-1, 12-1
@@ -21,7 +21,7 @@ RAW_DIR = Path(__file__).parent.parent / "data" / "raw"
 SIG_DIR = RAW_DIR / "signals"
 SIG_DIR.mkdir(parents=True, exist_ok=True)
 
-LOOKBACKS = [6, 9, 12]       # with skip=1 throughout
+LOOKBACKS = [6, 9, 12] # with skip=1 throughout
 RESID_WINDOWS = [24, 36, 48]
 FACTOR_MODELS = {
     "MKT": ["Mkt-RF"],
@@ -29,6 +29,7 @@ FACTOR_MODELS = {
 }
 
 
+# Residual momentum for one parameter combination.
 def _resid_mom_variant(
     ind: pd.DataFrame,
     factors: pd.DataFrame,
@@ -36,23 +37,19 @@ def _resid_mom_variant(
     resid_window: int,
     factor_cols: list[str],
 ) -> pd.DataFrame:
-    """Residual momentum for one parameter combination."""
     resid = _rolling_residuals(ind, factors[factor_cols], window=resid_window)
     return baseline_momentum(resid, lookback=lookback, skip=1)
 
 
+# Compute all signal variants. Returns a dict keyed by variant name.
 def run_all(verbose: bool = True) -> dict[str, pd.DataFrame]:
-    """
-    Compute all signal variants. Returns a dict keyed by variant name.
-    Also saves each variant to data/raw/signals/.
-    """
     ind = pd.read_parquet(RAW_DIR / "industry_returns.parquet")
     ff3 = pd.read_parquet(RAW_DIR / "ff3_factors.parquet")
 
     results = {}
     summary_rows = []
 
-    # --- Baseline momentum variants (no residualization) ---
+    # Baseline momentum variants (no residualization)
     for lb in LOOKBACKS:
         name = f"baseline_L{lb}"
         sig = baseline_momentum(ind, lookback=lb, skip=1)
@@ -60,7 +57,7 @@ def run_all(verbose: bool = True) -> dict[str, pd.DataFrame]:
         results[name] = sig
         summary_rows.append(_summarize(name, sig))
 
-    # --- Residual momentum variants ---
+    # Residual momentum variants
     total = len(LOOKBACKS) * len(RESID_WINDOWS) * len(FACTOR_MODELS)
     done = 0
     for lb, rw, (fm_name, fcols) in product(LOOKBACKS, RESID_WINDOWS, FACTOR_MODELS.items()):
@@ -74,7 +71,7 @@ def run_all(verbose: bool = True) -> dict[str, pd.DataFrame]:
         summary_rows.append(_summarize(name, sig))
 
     if verbose:
-        print()  # newline after \r
+        print() # newline after \r
 
     summary = pd.DataFrame(summary_rows).set_index("variant")
     if verbose:

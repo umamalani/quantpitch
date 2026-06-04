@@ -15,18 +15,16 @@ _IND49_DATASET = "49_Industry_Portfolios"
 _FF3_DATASET = "F-F_Research_Data_Factors"
 
 
+# Convert a French-library index (YYYY-MM or YYYYMM) to month-end DatetimeIndex.
 def _to_monthly_index(df: pd.DataFrame) -> pd.DataFrame:
-    """Convert a French-library index (YYYY-MM or YYYYMM) to month-end DatetimeIndex."""
     df.index = pd.to_datetime(df.index.astype(str), format="mixed") + pd.offsets.MonthEnd(0)
     df.index.name = "date"
     return df
 
 
+# Returns a DataFrame of 49-industry value-weighted monthly returns in percent.
+# Rows: month-end dates. Columns: industry names (stripped of whitespace).
 def load_industry_returns(start: str = "1963-07", end: str = None) -> pd.DataFrame:
-    """
-    Returns a DataFrame of 49-industry value-weighted monthly returns in percent.
-    Rows: month-end dates. Columns: industry names (stripped of whitespace).
-    """
     raw = web.DataReader(_IND49_DATASET, "famafrench", start="1926-01")[0]
     ind = _to_monthly_index(raw)
     ind.columns = ind.columns.str.strip()
@@ -39,11 +37,9 @@ def load_industry_returns(start: str = "1963-07", end: str = None) -> pd.DataFra
     return ind.loc[start_dt:end_dt]
 
 
+# Returns a DataFrame of FF3 factors (Mkt-RF, SMB, HML) and RF in percent.
+# Rows: month-end dates.
 def load_ff3_factors(start: str = "1963-07", end: str = None) -> pd.DataFrame:
-    """
-    Returns a DataFrame of FF3 factors (Mkt-RF, SMB, HML) and RF in percent.
-    Rows: month-end dates.
-    """
     raw = web.DataReader(_FF3_DATASET, "famafrench", start="1926-01")[0]
     ff3 = _to_monthly_index(raw)
     ff3.columns = ff3.columns.str.strip()
@@ -53,11 +49,9 @@ def load_ff3_factors(start: str = "1963-07", end: str = None) -> pd.DataFrame:
     return ff3.loc[start_dt:end_dt]
 
 
+# Aligns industry returns and FF3 factors to the same month-end DatetimeIndex.
+# Returns (industries, factors) — both in percent, same index.
 def build_panel(start: str = "1963-07", end: str = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Aligns industry returns and FF3 factors to the same month-end DatetimeIndex.
-    Returns (industries, factors) — both in percent, same index.
-    """
     ind = load_industry_returns(start=start, end=end)
     ff3 = load_ff3_factors(start=start, end=end)
 
