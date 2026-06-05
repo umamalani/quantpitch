@@ -12,6 +12,7 @@ Uma Malani and Daniel McCance.
 
 ## Repository Structure
 
+```
 quantpitch/
 ├── data/
 │   ├── load_data.py            # Downloads industry returns + FF3 + UMD from Ken French
@@ -26,6 +27,7 @@ quantpitch/
 │   └── robustness_table.csv    # Full results across all 21 variants
 ├── requirements.txt
 └── README.md
+```
 
 ## Reproducing the Results
 
