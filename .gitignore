@@ -1,4 +1,5 @@
+data/raw/
 __pycache__/
-*.pyc
-.ipynb_checkpoints/
+.ipynb_checkpoints/ 
+*.parquet
 .DS_Store
